@@ -20,17 +20,12 @@
           "group": "API Reference",
           "pages": [
             "api/work-orders",
-            {
-              "group": "Endpoints",
-              "pages": [
-                "api/endpoints/create-work-order",
-                "api/endpoints/get-work-order",
-                "api/endpoints/list-work-orders",
-                "api/endpoints/update-work-order",
-                "api/endpoints/delete-work-order",
-                "api/endpoints/approve-work-order"
-              ]
-            }
+            "api/endpoints/create-work-order",
+            "api/endpoints/get-work-order",
+            "api/endpoints/list-work-orders",
+            "api/endpoints/update-work-order",
+            "api/endpoints/delete-work-order",
+            "api/endpoints/approve-work-order"
           ]
         }
       ]
