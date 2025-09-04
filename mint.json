@@ -1,0 +1,30 @@
+{
+    "name": "BuildEnfra",
+    "favicon": "/favicon.ico",
+    "colors": {
+      "primary": "#3B82F6"
+    },
+    "navigation": [
+      {
+        "group": "Home",
+        "pages": ["index"]
+      },
+      {
+        "group": "Work Order Module",
+        "pages": [
+          "work-order/overview",
+          "work-order/schema",
+          "work-order/api-endpoints",
+          "work-order/data-flow",
+          "work-order/business-logic",
+          "work-order/integrations",
+          "work-order/future-enhancements"
+        ]
+      }
+    ],
+    "topbarLinks": [],
+    "footerSocials": {
+      "github": "https://github.com/BuildEnfra"
+    }
+  }
+  
