@@ -1,0 +1,127 @@
+---
+title: Delete Work Order
+description: Deletes a work order. Only work orders in DRAFT status can be deleted
+openapi: DELETE /work-orders/{id}
+---
+
+Deletes a work order. Only work orders in DRAFT status can be deleted.
+
+## Authorizations
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  Unique work order identifier
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://api.ttipl.com/v1/work-orders/wo_abc123def456" \
+  -H "Authorization: Bearer your_api_token_here"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.ttipl.com/v1/work-orders/wo_abc123def456', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here'
+  }
+});
+
+if (response.ok) {
+  console.log('Work Order deleted successfully');
+} else {
+  const error = await response.json();
+  console.error('Error:', error.error.message);
+}
+```
+
+```python Python
+import requests
+
+url = "https://api.ttipl.com/v1/work-orders/wo_abc123def456"
+headers = {
+    "Authorization": "Bearer your_api_token_here"
+}
+
+try:
+    response = requests.delete(url, headers=headers)
+    response.raise_for_status()
+    
+    if response.status_code == 204:
+        print("Work Order deleted successfully")
+    else:
+        result = response.json()
+        print(f"Work Order deleted: {result['message']}")
+        
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response (204 No Content)
+{
+  "success": true,
+  "message": "Work order deleted successfully"
+}
+```
+
+```json Error Response (400 Bad Request)
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_STATUS",
+    "message": "Cannot delete work order in APPROVED status"
+  },
+  "meta": {
+    "requestId": "req_delete_error",
+    "timestamp": "2024-01-15T11:00:00.000Z"
+  }
+}
+```
+
+```json Not Found Error (404 Not Found)
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Work order not found with the provided ID"
+  },
+  "meta": {
+    "requestId": "req_delete_notfound",
+    "timestamp": "2024-01-15T11:00:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the deletion was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Confirmation message when deletion is successful
+</ResponseField>
+
+<ResponseField name="error" type="object">
+  Error information when the request fails
+  
+  <Expandable title="Error Object">
+    <ResponseField name="error.code" type="string">
+      Machine-readable error code for programmatic handling
+    </ResponseField>
+    <ResponseField name="error.message" type="string">
+      Human-readable error description
+    </ResponseField>
+  </Expandable>
+</ResponseField>

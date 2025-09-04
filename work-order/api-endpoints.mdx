@@ -1,8 +1,1029 @@
 ---
 title: API Endpoints
-description: Work order API endpoints
+description: Complete Work Order API endpoints for TTIPL Server with authentication, rate limits, and comprehensive examples
 ---
 
 # Work Order API Endpoints
 
-This section covers the API endpoints for work orders.
+The Work Order module provides a comprehensive set of RESTful API endpoints for managing different types of work orders, including **Direct BOQ Linked**, **Indirect BOQ Linked**, **Non-BOQ**, and **Labour Work Orders**. These endpoints allow you to create, update, preview, approve, and fetch work orders with full support for location-wise breakdown, BOQ linkage, and billing integration.
+
+## Authentication
+
+All API requests require a valid Bearer token in the Authorization header:
+
+```bash
+Authorization: Bearer <your_api_token>
+```
+
+## Rate Limits
+
+- **Standard requests**: 1000 requests per hour per API key
+- **Bulk operations**: 100 requests per hour per API key  
+- **Preview operations**: 500 requests per hour per API key
+- **Approval operations**: 200 requests per hour per API key
+
+Rate limit headers are included in all responses:
+- `X-RateLimit-Limit`: Request limit per hour
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: UTC timestamp when the rate limit resets
+
+## Base URL
+
+```
+https://api.ttipl.com/v1
+```
+
+## Create Work Order
+
+<Badge variant="outline">POST</Badge> `/work-orders`
+
+Creates a new work order with flexible configurations for different work order types including BOQ-linked and non-BOQ work orders.
+
+### Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+### Request Parameters
+
+<ParamField body="projectId" type="string" required>
+  Unique identifier for the project where the work order will be executed
+</ParamField>
+
+<ParamField body="type" type="string" required>
+  Work order type. Must be one of:
+  - `DIRECT_BOQ`: Directly linked to BOQ items with predefined rates
+  - `INDIRECT_BOQ`: Related to BOQ but with custom rates  
+  - `NON_BOQ`: Independent work not linked to any BOQ
+  - `LABOUR`: Labour-only work orders without materials
+</ParamField>
+
+<ParamField body="contractorId" type="string" required>
+  Unique identifier of the contractor assigned to execute the work
+</ParamField>
+
+<ParamField body="items" type="array" required>
+  Array of work order items. Each item must contain:
+  
+  <Expandable title="Item Properties">
+    <ParamField body="items[].boqId" type="string">
+      BOQ item identifier (required for DIRECT_BOQ and INDIRECT_BOQ types)
+    </ParamField>
+    <ParamField body="items[].quantity" type="number" required>
+      Quantity of work to be performed (must be positive)
+    </ParamField>
+    <ParamField body="items[].rate" type="number" required>
+      Rate per unit in the project currency (must be positive)
+    </ParamField>
+    <ParamField body="items[].description" type="string">
+      Optional description of the work item
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="startDate" type="string" required>
+  Work start date in ISO 8601 format (YYYY-MM-DD)
+</ParamField>
+
+<ParamField body="endDate" type="string" required>
+  Work end date in ISO 8601 format (YYYY-MM-DD). Must be after startDate
+</ParamField>
+
+<ParamField body="locations" type="array">
+  Array of location identifiers where work will be performed
+</ParamField>
+
+<ParamField body="description" type="string">
+  Optional detailed description of the work order
+</ParamField>
+
+<ParamField body="priority" type="string">
+  Work order priority level: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+</ParamField>
+
+### Request Example
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.ttipl.com/v1/work-orders" \
+  -H "Authorization: Bearer your_api_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "proj_67890abc",
+    "type": "DIRECT_BOQ",
+    "contractorId": "cont_12345def",
+    "items": [
+      {
+        "boqId": "boq_98765xyz",
+        "quantity": 150,
+        "rate": 2750.50,
+        "description": "Concrete foundation work"
+      },
+      {
+        "boqId": "boq_11111aaa",
+        "quantity": 75,
+        "rate": 1200.00,
+        "description": "Steel reinforcement"
+      }
+    ],
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-30",
+    "locations": ["loc_building_a", "loc_building_b"],
+    "description": "Foundation and structural work for Phase 1",
+    "priority": "HIGH"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.ttipl.com/v1/work-orders', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    projectId: 'proj_67890abc',
+    type: 'DIRECT_BOQ',
+    contractorId: 'cont_12345def',
+    items: [
+      {
+        boqId: 'boq_98765xyz',
+        quantity: 150,
+        rate: 2750.50,
+        description: 'Concrete foundation work'
+      },
+      {
+        boqId: 'boq_11111aaa',
+        quantity: 75,
+        rate: 1200.00,
+        description: 'Steel reinforcement'
+      }
+    ],
+    startDate: '2024-01-15',
+    endDate: '2024-03-30',
+    locations: ['loc_building_a', 'loc_building_b'],
+    description: 'Foundation and structural work for Phase 1',
+    priority: 'HIGH'
+  })
+});
+
+const data = await response.json();
+if (response.ok) {
+  console.log('Work Order Created:', data.data.id);
+} else {
+  console.error('Error:', data.error.message);
+}
+```
+
+```python Python
+import requests
+import json
+
+url = "https://api.ttipl.com/v1/work-orders"
+headers = {
+    "Authorization": "Bearer your_api_token_here",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "projectId": "proj_67890abc",
+    "type": "DIRECT_BOQ",
+    "contractorId": "cont_12345def",
+    "items": [
+        {
+            "boqId": "boq_98765xyz",
+            "quantity": 150,
+            "rate": 2750.50,
+            "description": "Concrete foundation work"
+        },
+        {
+            "boqId": "boq_11111aaa",
+            "quantity": 75,
+            "rate": 1200.00,
+            "description": "Steel reinforcement"
+        }
+    ],
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-30",
+    "locations": ["loc_building_a", "loc_building_b"],
+    "description": "Foundation and structural work for Phase 1",
+    "priority": "HIGH"
+}
+
+try:
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    work_order = response.json()
+    print(f"Work Order Created: {work_order['data']['id']}")
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+### Response
+
+<ResponseExample>
+```json Success Response (201 Created)
+{
+  "success": true,
+  "data": {
+    "id": "wo_abc123def456",
+    "projectId": "proj_67890abc",
+    "type": "DIRECT_BOQ",
+    "status": "DRAFT",
+    "contractorId": "cont_12345def",
+    "totalAmount": 502575.00,
+    "itemsCount": 2,
+    "items": [
+      {
+        "id": "item_001",
+        "boqId": "boq_98765xyz",
+        "quantity": 150,
+        "rate": 2750.50,
+        "amount": 412575.00,
+        "description": "Concrete foundation work"
+      },
+      {
+        "id": "item_002",
+        "boqId": "boq_11111aaa",
+        "quantity": 75,
+        "rate": 1200.00,
+        "amount": 90000.00,
+        "description": "Steel reinforcement"
+      }
+    ],
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-30",
+    "locations": ["loc_building_a", "loc_building_b"],
+    "description": "Foundation and structural work for Phase 1",
+    "priority": "HIGH",
+    "createdAt": "2024-01-10T14:30:00.000Z",
+    "updatedAt": "2024-01-10T14:30:00.000Z",
+    "createdBy": "user_789xyz"
+  },
+  "meta": {
+    "requestId": "req_abc123",
+    "processingTime": "245ms"
+  }
+}
+```
+
+```json Validation Error (400 Bad Request)
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "details": [
+      {
+        "field": "items[0].quantity",
+        "message": "Quantity must be a positive number",
+        "value": -10
+      },
+      {
+        "field": "endDate",
+        "message": "End date must be after start date",
+        "value": "2024-01-10"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_error123",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+
+```json Authentication Error (401 Unauthorized)
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or expired authentication token"
+  },
+  "meta": {
+    "requestId": "req_auth_error",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+
+```json Rate Limit Error (429 Too Many Requests)
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "API rate limit exceeded. Please try again later."
+  },
+  "meta": {
+    "requestId": "req_rate_limit",
+    "timestamp": "2024-01-10T14:30:00.000Z",
+    "retryAfter": 3600
+  }
+}
+```
+</ResponseExample>
+
+### Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Contains the created work order data when successful
+  
+  <Expandable title="Work Order Object">
+    <ResponseField name="data.id" type="string">
+      Unique identifier for the created work order
+    </ResponseField>
+    <ResponseField name="data.status" type="string">
+      Current status of the work order (always "DRAFT" for new work orders)
+    </ResponseField>
+    <ResponseField name="data.totalAmount" type="number">
+      Total calculated amount for all items in the work order
+    </ResponseField>
+    <ResponseField name="data.itemsCount" type="number">
+      Number of items in the work order
+    </ResponseField>
+    <ResponseField name="data.createdAt" type="string">
+      ISO 8601 timestamp when the work order was created
+    </ResponseField>
+    <ResponseField name="data.createdBy" type="string">
+      ID of the user who created the work order
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="object">
+  Error information when the request fails
+  
+  <Expandable title="Error Object">
+    <ResponseField name="error.code" type="string">
+      Machine-readable error code for programmatic handling
+    </ResponseField>
+    <ResponseField name="error.message" type="string">
+      Human-readable error description
+    </ResponseField>
+    <ResponseField name="error.details" type="array">
+      Detailed validation errors (present for validation failures)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="meta" type="object">
+  Additional metadata about the request
+  
+  <Expandable title="Metadata Object">
+    <ResponseField name="meta.requestId" type="string">
+      Unique identifier for the request (useful for debugging)
+    </ResponseField>
+    <ResponseField name="meta.processingTime" type="string">
+      Time taken to process the request
+    </ResponseField>
+    <ResponseField name="meta.timestamp" type="string">
+      ISO 8601 timestamp of the response
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## Get Work Order
+
+<Badge variant="outline">GET</Badge> `/work-orders/{id}`
+
+Retrieves details of a specific work order including all items, calculations, and status information.
+
+### Path Parameters
+
+<ParamField path="id" type="string" required>
+  Unique work order identifier
+</ParamField>
+
+### Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+### Request Example
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.ttipl.com/v1/work-orders/wo_abc123def456" \
+  -H "Authorization: Bearer your_api_token_here" \
+  -H "Content-Type: application/json"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.ttipl.com/v1/work-orders/wo_abc123def456', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here',
+    'Content-Type': 'application/json',
+  }
+});
+
+const data = await response.json();
+if (response.ok) {
+  console.log('Work Order Retrieved:', data.data);
+} else {
+  console.error('Error:', data.error.message);
+}
+```
+
+```python Python
+import requests
+
+url = "https://api.ttipl.com/v1/work-orders/wo_abc123def456"
+headers = {
+    "Authorization": "Bearer your_api_token_here",
+    "Content-Type": "application/json"
+}
+
+try:
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    work_order = response.json()
+    print(f"Work Order Status: {work_order['data']['status']}")
+    print(f"Total Amount: ${work_order['data']['totalAmount']}")
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+### Response
+
+<ResponseExample>
+```json Success Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "id": "wo_abc123def456",
+    "projectId": "proj_67890abc",
+    "type": "DIRECT_BOQ",
+    "status": "APPROVED",
+    "contractorId": "cont_12345def",
+    "totalAmount": 502575.00,
+    "itemsCount": 2,
+    "items": [
+      {
+        "id": "item_001",
+        "boqId": "boq_98765xyz",
+        "quantity": 150,
+        "rate": 2750.50,
+        "amount": 412575.00,
+        "description": "Concrete foundation work",
+        "completedQuantity": 75,
+        "remainingQuantity": 75,
+        "completionPercentage": 50.0
+      },
+      {
+        "id": "item_002",
+        "boqId": "boq_11111aaa",
+        "quantity": 75,
+        "rate": 1200.00,
+        "amount": 90000.00,
+        "description": "Steel reinforcement",
+        "completedQuantity": 0,
+        "remainingQuantity": 75,
+        "completionPercentage": 0.0
+      }
+    ],
+    "locations": ["loc_building_a", "loc_building_b"],
+    "description": "Foundation and structural work for Phase 1",
+    "priority": "HIGH",
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-30",
+    "actualStartDate": "2024-01-16",
+    "estimatedCompletionDate": "2024-03-28",
+    "completionPercentage": 25.0,
+    "createdAt": "2024-01-10T14:30:00.000Z",
+    "updatedAt": "2024-01-20T09:15:00.000Z",
+    "createdBy": "user_789xyz",
+    "approvedBy": "user_manager123",
+    "approvedAt": "2024-01-12T10:00:00.000Z"
+  },
+  "meta": {
+    "requestId": "req_get123",
+    "processingTime": "85ms"
+  }
+}
+```
+
+```json Not Found Error (404 Not Found)
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Work order not found with the provided ID",
+    "details": {
+      "workOrderId": "wo_invalid123"
+    }
+  },
+  "meta": {
+    "requestId": "req_notfound123",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+
+```json Authentication Error (401 Unauthorized)
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid or expired authentication token"
+  },
+  "meta": {
+    "requestId": "req_auth_error",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+
+```json Forbidden Error (403 Forbidden)
+{
+  "success": false,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "You don't have permission to access this work order"
+  },
+  "meta": {
+    "requestId": "req_forbidden123",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+### Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Contains the work order data when successful
+  
+  <Expandable title="Work Order Object">
+    <ResponseField name="data.id" type="string">
+      Unique identifier for the work order
+    </ResponseField>
+    <ResponseField name="data.status" type="string">
+      Current status of the work order (DRAFT, PENDING_APPROVAL, APPROVED, IN_PROGRESS, COMPLETED, CANCELLED)
+    </ResponseField>
+    <ResponseField name="data.totalAmount" type="number">
+      Total calculated amount for all items in the work order
+    </ResponseField>
+    <ResponseField name="data.completionPercentage" type="number">
+      Overall completion percentage of the work order (0-100)
+    </ResponseField>
+    <ResponseField name="data.actualStartDate" type="string">
+      ISO 8601 timestamp when work actually started (null if not started)
+    </ResponseField>
+    <ResponseField name="data.estimatedCompletionDate" type="string">
+      Estimated completion date based on current progress
+    </ResponseField>
+    <ResponseField name="data.approvedBy" type="string">
+      ID of the user who approved the work order (null if not approved)
+    </ResponseField>
+    <ResponseField name="data.approvedAt" type="string">
+      ISO 8601 timestamp when the work order was approved
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## List Work Orders
+
+<Badge variant="outline">GET</Badge> `/work-orders`
+
+Returns a paginated list of work orders with optional filtering capabilities.
+
+### Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+### Query Parameters
+
+<ParamField query="projectId" type="string">
+  Filter by project identifier
+</ParamField>
+
+<ParamField query="type" type="string">
+  Filter by work order type: `DIRECT_BOQ`, `INDIRECT_BOQ`, `NON_BOQ`, `LABOUR`
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by work order status: `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
+</ParamField>
+
+<ParamField query="contractorId" type="string">
+  Filter by contractor identifier
+</ParamField>
+
+<ParamField query="priority" type="string">
+  Filter by priority level: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+</ParamField>
+
+<ParamField query="startDate" type="string">
+  Filter work orders starting from this date (ISO 8601 format)
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  Filter work orders ending before this date (ISO 8601 format)
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number for pagination (default: 1, minimum: 1)
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Number of items per page (default: 20, minimum: 1, maximum: 100)
+</ParamField>
+
+<ParamField query="sortBy" type="string">
+  Sort field: `createdAt`, `updatedAt`, `totalAmount`, `priority`, `startDate` (default: `createdAt`)
+</ParamField>
+
+<ParamField query="sortOrder" type="string">
+  Sort order: `asc`, `desc` (default: `desc`)
+</ParamField>
+
+### Request Example
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.ttipl.com/v1/work-orders?projectId=proj_67890abc&status=APPROVED&page=1&limit=10&sortBy=totalAmount&sortOrder=desc" \
+  -H "Authorization: Bearer your_api_token_here" \
+  -H "Content-Type: application/json"
+```
+
+```javascript JavaScript
+const queryParams = new URLSearchParams({
+  projectId: 'proj_67890abc',
+  status: 'APPROVED',
+  page: '1',
+  limit: '10',
+  sortBy: 'totalAmount',
+  sortOrder: 'desc'
+});
+
+const response = await fetch(`https://api.ttipl.com/v1/work-orders?${queryParams}`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here',
+    'Content-Type': 'application/json',
+  }
+});
+
+const data = await response.json();
+if (response.ok) {
+  console.log(`Found ${data.data.pagination.total} work orders`);
+  data.data.workOrders.forEach(wo => {
+    console.log(`${wo.id}: $${wo.totalAmount} (${wo.status})`);
+  });
+} else {
+  console.error('Error:', data.error.message);
+}
+```
+
+```python Python
+import requests
+
+url = "https://api.ttipl.com/v1/work-orders"
+headers = {
+    "Authorization": "Bearer your_api_token_here",
+    "Content-Type": "application/json"
+}
+
+params = {
+    "projectId": "proj_67890abc",
+    "status": "APPROVED",
+    "page": 1,
+    "limit": 10,
+    "sortBy": "totalAmount",
+    "sortOrder": "desc"
+}
+
+try:
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    data = response.json()
+    
+    print(f"Found {data['data']['pagination']['total']} work orders")
+    for work_order in data['data']['workOrders']:
+        print(f"{work_order['id']}: ${work_order['totalAmount']} ({work_order['status']})")
+        
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+### Response
+
+<ResponseExample>
+```json Success Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "workOrders": [
+      {
+        "id": "wo_abc123def456",
+        "projectId": "proj_67890abc",
+        "type": "DIRECT_BOQ",
+        "status": "APPROVED",
+        "contractorId": "cont_12345def",
+        "totalAmount": 502575.00,
+        "itemsCount": 2,
+        "priority": "HIGH",
+        "startDate": "2024-01-15",
+        "endDate": "2024-03-30",
+        "completionPercentage": 25.0,
+        "createdAt": "2024-01-10T14:30:00.000Z",
+        "updatedAt": "2024-01-20T09:15:00.000Z",
+        "createdBy": "user_789xyz"
+      },
+      {
+        "id": "wo_def456ghi789",
+        "projectId": "proj_67890abc",
+        "type": "NON_BOQ",
+        "status": "APPROVED",
+        "contractorId": "cont_98765zyx",
+        "totalAmount": 125000.00,
+        "itemsCount": 1,
+        "priority": "MEDIUM",
+        "startDate": "2024-02-01",
+        "endDate": "2024-02-28",
+        "completionPercentage": 80.0,
+        "createdAt": "2024-01-15T10:00:00.000Z",
+        "updatedAt": "2024-02-20T16:30:00.000Z",
+        "createdBy": "user_456def"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 47,
+      "pages": 5,
+      "hasNext": true,
+      "hasPrevious": false
+    },
+    "filters": {
+      "projectId": "proj_67890abc",
+      "status": "APPROVED"
+    },
+    "sorting": {
+      "sortBy": "totalAmount",
+      "sortOrder": "desc"
+    }
+  },
+  "meta": {
+    "requestId": "req_list123",
+    "processingTime": "125ms"
+  }
+}
+```
+
+```json Empty Results (200 OK)
+{
+  "success": true,
+  "data": {
+    "workOrders": [],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 0,
+      "pages": 0,
+      "hasNext": false,
+      "hasPrevious": false
+    },
+    "filters": {
+      "status": "COMPLETED"
+    }
+  },
+  "meta": {
+    "requestId": "req_empty123",
+    "processingTime": "45ms"
+  }
+}
+```
+
+```json Validation Error (400 Bad Request)
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid query parameters",
+    "details": [
+      {
+        "field": "limit",
+        "message": "Limit must be between 1 and 100",
+        "value": 150
+      },
+      {
+        "field": "sortBy",
+        "message": "Invalid sort field",
+        "value": "invalidField"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_validation_error",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+### Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Contains the work orders list and pagination information
+  
+  <Expandable title="Data Object">
+    <ResponseField name="data.workOrders" type="array">
+      Array of work order objects (see individual work order structure above)
+    </ResponseField>
+    <ResponseField name="data.pagination" type="object">
+      Pagination information for the result set
+      
+      <Expandable title="Pagination Object">
+        <ResponseField name="data.pagination.page" type="integer">
+          Current page number
+        </ResponseField>
+        <ResponseField name="data.pagination.limit" type="integer">
+          Number of items per page
+        </ResponseField>
+        <ResponseField name="data.pagination.total" type="integer">
+          Total number of work orders matching the filters
+        </ResponseField>
+        <ResponseField name="data.pagination.pages" type="integer">
+          Total number of pages available
+        </ResponseField>
+        <ResponseField name="data.pagination.hasNext" type="boolean">
+          Whether there are more pages after the current one
+        </ResponseField>
+        <ResponseField name="data.pagination.hasPrevious" type="boolean">
+          Whether there are pages before the current one
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="data.filters" type="object">
+      Applied filters for the query
+    </ResponseField>
+    <ResponseField name="data.sorting" type="object">
+      Applied sorting configuration
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+### Update Work Order
+
+<Badge variant="outline">PUT</Badge> `/work-orders/{id}`
+
+Updates an existing work order. Only work orders in DRAFT status can be modified.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | `string` | **Required** | Unique work order identifier |
+
+#### Authorizations
+
+| Parameter | Type | Location | Required | Description |
+|-----------|------|----------|----------|-------------|
+| Authorization | `string` | header | **Required** | Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token. |
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| items | `array` | Optional | Updated array of work order items |
+| endDate | `string` | Optional | Updated end date in YYYY-MM-DD format |
+| locations | `array` | Optional | Updated array of location identifiers |
+
+```json title="Request Example"
+{
+  "items": [
+    {
+      "boqId": "boq_789",
+      "quantity": 150,
+      "rate": 2600
+    }
+  ],
+  "endDate": "2025-10-20"
+}
+```
+
+---
+
+### Approve Work Order
+
+<Badge variant="outline">POST</Badge> `/work-orders/{id}/approve`
+
+Approves a work order for execution. Changes status from PENDING_APPROVAL to APPROVED.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | `string` | **Required** | Unique work order identifier |
+
+#### Authorizations
+
+| Parameter | Type | Location | Required | Description |
+|-----------|------|----------|----------|-------------|
+| Authorization | `string` | header | **Required** | Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token. |
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| approvedBy | `string` | **Required** | User identifier who is approving |
+| comments | `string` | Optional | Approval comments or notes |
+
+```json title="Request Example"
+{
+  "approvedBy": "user_123",
+  "comments": "Approved for immediate execution"
+}
+```
+
+---
+
+### Preview Work Order
+
+<Badge variant="outline">POST</Badge> `/work-orders/preview`
+
+Generates a preview of work order calculations without saving to the database. Useful for cost estimation.
+
+#### Authorizations
+
+| Parameter | Type | Location | Required | Description |
+|-----------|------|----------|----------|-------------|
+| Authorization | `string` | header | **Required** | Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token. |
+
+#### Request Body
+
+Same as Create Work Order request body.
+
+---
+
+### Delete Work Order
+
+<Badge variant="outline">DELETE</Badge> `/work-orders/{id}`
+
+Deletes a work order. Only work orders in DRAFT status can be deleted.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | `string` | **Required** | Unique work order identifier |
+
+#### Authorizations
+
+| Parameter | Type | Location | Required | Description |
+|-----------|------|----------|----------|-------------|
+| Authorization | `string` | header | **Required** | Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token. |
+
+## 📋 Status Codes
+
+| Status | Description |
+|--------|-------------|
+| `DRAFT` | Newly created, can be edited |
+| `PENDING_APPROVAL` | Submitted for approval |
+| `APPROVED` | Approved and ready for execution |
+| `IN_PROGRESS` | Work is ongoing |
+| `COMPLETED` | Work finished |
+| `CANCELLED` | Work order cancelled |
+
+## 🔍 Work Order Types
+
+- **DIRECT_BOQ** - Directly linked to BOQ items
+- **INDIRECT_BOQ** - Indirectly related to BOQ
+- **NON_BOQ** - Not linked to any BOQ
+- **LABOUR** - Labour-only work orders

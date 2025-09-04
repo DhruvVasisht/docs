@@ -1,0 +1,292 @@
+---
+title: List Work Orders
+description: Returns a paginated list of work orders with optional filtering capabilities
+openapi: GET /work-orders
+---
+
+Returns a paginated list of work orders with optional filtering capabilities.
+
+## Authorizations
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="projectId" type="string">
+  Filter by project identifier
+</ParamField>
+
+<ParamField query="type" type="string">
+  Filter by work order type: `DIRECT_BOQ`, `INDIRECT_BOQ`, `NON_BOQ`, `LABOUR`
+</ParamField>
+
+<ParamField query="status" type="string">
+  Filter by work order status: `DRAFT`, `PENDING_APPROVAL`, `APPROVED`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`
+</ParamField>
+
+<ParamField query="contractorId" type="string">
+  Filter by contractor identifier
+</ParamField>
+
+<ParamField query="priority" type="string">
+  Filter by priority level: `LOW`, `MEDIUM`, `HIGH`, `URGENT`
+</ParamField>
+
+<ParamField query="startDate" type="string">
+  Filter work orders starting from this date (ISO 8601 format)
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  Filter work orders ending before this date (ISO 8601 format)
+</ParamField>
+
+<ParamField query="page" type="integer">
+  Page number for pagination (default: 1, minimum: 1)
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Number of items per page (default: 20, minimum: 1, maximum: 100)
+</ParamField>
+
+<ParamField query="sortBy" type="string">
+  Sort field: `createdAt`, `updatedAt`, `totalAmount`, `priority`, `startDate` (default: `createdAt`)
+</ParamField>
+
+<ParamField query="sortOrder" type="string">
+  Sort order: `asc`, `desc` (default: `desc`)
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.ttipl.com/v1/work-orders?projectId=proj_67890abc&status=APPROVED&page=1&limit=10&sortBy=totalAmount&sortOrder=desc" \
+  -H "Authorization: Bearer your_api_token_here" \
+  -H "Content-Type: application/json"
+```
+
+```javascript JavaScript
+const queryParams = new URLSearchParams({
+  projectId: 'proj_67890abc',
+  status: 'APPROVED',
+  page: '1',
+  limit: '10',
+  sortBy: 'totalAmount',
+  sortOrder: 'desc'
+});
+
+const response = await fetch(`https://api.ttipl.com/v1/work-orders?${queryParams}`, {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here',
+    'Content-Type': 'application/json',
+  }
+});
+
+const data = await response.json();
+if (response.ok) {
+  console.log(`Found ${data.data.pagination.total} work orders`);
+  data.data.workOrders.forEach(wo => {
+    console.log(`${wo.id}: $${wo.totalAmount} (${wo.status})`);
+  });
+} else {
+  console.error('Error:', data.error.message);
+}
+```
+
+```python Python
+import requests
+
+url = "https://api.ttipl.com/v1/work-orders"
+headers = {
+    "Authorization": "Bearer your_api_token_here",
+    "Content-Type": "application/json"
+}
+
+params = {
+    "projectId": "proj_67890abc",
+    "status": "APPROVED",
+    "page": 1,
+    "limit": 10,
+    "sortBy": "totalAmount",
+    "sortOrder": "desc"
+}
+
+try:
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
+    data = response.json()
+    
+    print(f"Found {data['data']['pagination']['total']} work orders")
+    print(f"Page {data['data']['pagination']['page']} of {data['data']['pagination']['pages']}")
+    
+    for work_order in data['data']['workOrders']:
+        print(f"  {work_order['id']}: ${work_order['totalAmount']} ({work_order['status']})")
+        
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "workOrders": [
+      {
+        "id": "wo_abc123def456",
+        "projectId": "proj_67890abc",
+        "type": "DIRECT_BOQ",
+        "status": "APPROVED",
+        "contractorId": "cont_12345def",
+        "totalAmount": 502575.00,
+        "itemsCount": 2,
+        "priority": "HIGH",
+        "startDate": "2024-01-15",
+        "endDate": "2024-03-30",
+        "completionPercentage": 25.0,
+        "createdAt": "2024-01-10T14:30:00.000Z",
+        "updatedAt": "2024-01-20T09:15:00.000Z",
+        "createdBy": "user_789xyz"
+      },
+      {
+        "id": "wo_def456ghi789",
+        "projectId": "proj_67890abc",
+        "type": "NON_BOQ",
+        "status": "APPROVED",
+        "contractorId": "cont_98765zyx",
+        "totalAmount": 125000.00,
+        "itemsCount": 1,
+        "priority": "MEDIUM",
+        "startDate": "2024-02-01",
+        "endDate": "2024-02-28",
+        "completionPercentage": 80.0,
+        "createdAt": "2024-01-15T10:00:00.000Z",
+        "updatedAt": "2024-02-20T16:30:00.000Z",
+        "createdBy": "user_456def"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 47,
+      "pages": 5,
+      "hasNext": true,
+      "hasPrevious": false
+    },
+    "filters": {
+      "projectId": "proj_67890abc",
+      "status": "APPROVED"
+    },
+    "sorting": {
+      "sortBy": "totalAmount",
+      "sortOrder": "desc"
+    }
+  },
+  "meta": {
+    "requestId": "req_list123",
+    "processingTime": "125ms"
+  }
+}
+```
+
+```json Empty Results (200 OK)
+{
+  "success": true,
+  "data": {
+    "workOrders": [],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 0,
+      "pages": 0,
+      "hasNext": false,
+      "hasPrevious": false
+    },
+    "filters": {
+      "status": "COMPLETED"
+    }
+  },
+  "meta": {
+    "requestId": "req_empty123",
+    "processingTime": "45ms"
+  }
+}
+```
+
+```json Validation Error (400 Bad Request)
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid query parameters",
+    "details": [
+      {
+        "field": "limit",
+        "message": "Limit must be between 1 and 100",
+        "value": 150
+      },
+      {
+        "field": "sortBy",
+        "message": "Invalid sort field",
+        "value": "invalidField"
+      }
+    ]
+  },
+  "meta": {
+    "requestId": "req_validation_error",
+    "timestamp": "2024-01-10T14:30:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Contains the work orders list and pagination information
+  
+  <Expandable title="Data Object">
+    <ResponseField name="data.workOrders" type="array">
+      Array of work order objects (see individual work order structure)
+    </ResponseField>
+    <ResponseField name="data.pagination" type="object">
+      Pagination information for the result set
+      
+      <Expandable title="Pagination Object">
+        <ResponseField name="data.pagination.page" type="integer">
+          Current page number
+        </ResponseField>
+        <ResponseField name="data.pagination.limit" type="integer">
+          Number of items per page
+        </ResponseField>
+        <ResponseField name="data.pagination.total" type="integer">
+          Total number of work orders matching the filters
+        </ResponseField>
+        <ResponseField name="data.pagination.pages" type="integer">
+          Total number of pages available
+        </ResponseField>
+        <ResponseField name="data.pagination.hasNext" type="boolean">
+          Whether there are more pages after the current one
+        </ResponseField>
+        <ResponseField name="data.pagination.hasPrevious" type="boolean">
+          Whether there are pages before the current one
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="data.filters" type="object">
+      Applied filters for the query
+    </ResponseField>
+    <ResponseField name="data.sorting" type="object">
+      Applied sorting configuration
+    </ResponseField>
+  </Expandable>
+</ResponseField>

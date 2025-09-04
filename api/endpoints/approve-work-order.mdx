@@ -1,0 +1,196 @@
+---
+title: Approve Work Order
+description: Approves a work order for execution. Changes status from PENDING_APPROVAL to APPROVED
+openapi: POST /work-orders/{id}/approve
+---
+
+Approves a work order for execution. Changes status from PENDING_APPROVAL to APPROVED.
+
+## Authorizations
+
+<ParamField header="Authorization" type="string" required>
+  Bearer authentication header of the form `Bearer <token>`, where `<token>` is your auth token
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="id" type="string" required>
+  Unique work order identifier
+</ParamField>
+
+## Request Body
+
+<ParamField body="approvedBy" type="string" required>
+  User identifier who is approving the work order
+</ParamField>
+
+<ParamField body="comments" type="string">
+  Optional approval comments or notes
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.ttipl.com/v1/work-orders/wo_abc123def456/approve" \
+  -H "Authorization: Bearer your_api_token_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "approvedBy": "user_manager123",
+    "comments": "Approved for immediate execution"
+  }'
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.ttipl.com/v1/work-orders/wo_abc123def456/approve', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer your_api_token_here',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    approvedBy: 'user_manager123',
+    comments: 'Approved for immediate execution'
+  })
+});
+
+const data = await response.json();
+if (response.ok) {
+  console.log('Work Order Approved:', data.data.id);
+  console.log('Approved by:', data.data.approvedBy);
+  console.log('Approved at:', data.data.approvedAt);
+} else {
+  console.error('Error:', data.error.message);
+}
+```
+
+```python Python
+import requests
+
+url = "https://api.ttipl.com/v1/work-orders/wo_abc123def456/approve"
+headers = {
+    "Authorization": "Bearer your_api_token_here",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "approvedBy": "user_manager123",
+    "comments": "Approved for immediate execution"
+}
+
+try:
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    approval = response.json()
+    
+    print(f"Work Order Approved: {approval['data']['id']}")
+    print(f"Status: {approval['data']['status']}")
+    print(f"Approved by: {approval['data']['approvedBy']}")
+    print(f"Approved at: {approval['data']['approvedAt']}")
+    
+except requests.exceptions.HTTPError as e:
+    error_data = response.json()
+    print(f"HTTP Error: {error_data['error']['message']}")
+except requests.exceptions.RequestException as e:
+    print(f"Request Error: {e}")
+```
+</RequestExample>
+
+<ResponseExample>
+```json Success Response (200 OK)
+{
+  "success": true,
+  "data": {
+    "id": "wo_abc123def456",
+    "status": "APPROVED",
+    "approvedBy": "user_manager123",
+    "approvedAt": "2024-01-15T14:30:00.000Z",
+    "comments": "Approved for immediate execution",
+    "totalAmount": 502575.00,
+    "projectId": "proj_67890abc",
+    "contractorId": "cont_12345def"
+  },
+  "meta": {
+    "requestId": "req_approve123",
+    "processingTime": "95ms"
+  }
+}
+```
+
+```json Error Response (400 Bad Request)
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_STATUS",
+    "message": "Work order must be in PENDING_APPROVAL status to approve",
+    "details": {
+      "currentStatus": "DRAFT",
+      "requiredStatus": "PENDING_APPROVAL"
+    }
+  },
+  "meta": {
+    "requestId": "req_approve_error",
+    "timestamp": "2024-01-15T14:30:00.000Z"
+  }
+}
+```
+
+```json Not Found Error (404 Not Found)
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Work order not found with the provided ID"
+  },
+  "meta": {
+    "requestId": "req_approve_notfound",
+    "timestamp": "2024-01-15T14:30:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+## Response Fields
+
+<ResponseField name="success" type="boolean">
+  Indicates whether the approval was successful
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Contains the approved work order data when successful
+  
+  <Expandable title="Approval Data Object">
+    <ResponseField name="data.id" type="string">
+      Unique identifier for the work order
+    </ResponseField>
+    <ResponseField name="data.status" type="string">
+      Updated status of the work order (will be "APPROVED")
+    </ResponseField>
+    <ResponseField name="data.approvedBy" type="string">
+      ID of the user who approved the work order
+    </ResponseField>
+    <ResponseField name="data.approvedAt" type="string">
+      ISO 8601 timestamp when the work order was approved
+    </ResponseField>
+    <ResponseField name="data.comments" type="string">
+      Approval comments provided during the approval process
+    </ResponseField>
+    <ResponseField name="data.totalAmount" type="number">
+      Total amount of the approved work order
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="object">
+  Error information when the request fails
+  
+  <Expandable title="Error Object">
+    <ResponseField name="error.code" type="string">
+      Machine-readable error code for programmatic handling
+    </ResponseField>
+    <ResponseField name="error.message" type="string">
+      Human-readable error description
+    </ResponseField>
+    <ResponseField name="error.details" type="object">
+      Additional error details (present for specific error types)
+    </ResponseField>
+  </Expandable>
+</ResponseField>

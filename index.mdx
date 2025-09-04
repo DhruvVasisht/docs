@@ -1,46 +1,108 @@
 ---
 title: BuildInfra Documentation
-description: Welcome to the official BuildInfra documentation
+description: Comprehensive documentation for BuildInfra construction management platform with work order system, API reference, and integration guides
 ---
 
-# 🚀 Welcome to BuildInfra Docs
+# Welcome to BuildInfra Documentation
 
-Welcome to the **BuildInfra Documentation Hub** — your go-to resource for understanding, using, and extending the BuildInfra ecosystem.  
+Welcome to the **BuildInfra Documentation Hub** — your comprehensive resource for understanding, implementing, and extending the BuildInfra construction management ecosystem.
 
-Whether you’re a developer, contributor, or stakeholder, this documentation will help you navigate everything from setup to advanced features.
+Whether you're a developer integrating our APIs, a project manager setting up workflows, or a stakeholder evaluating our platform, this documentation provides everything you need to succeed with BuildInfra.
+
+## What You'll Find Here
+
+<Accordions>
+  <Accordion title="Work Order Management">
+    Complete documentation for our work order system including:
+    - [Work Order Overview](/work-order/overview) - Understanding the system architecture
+    - [Schema Documentation](/work-order/schema) - Database structure and relationships
+    - [Data Flow](/work-order/data-flow) - How data moves through the system
+    - [Business Logic](/work-order/business-logic) - Rules and validation processes
+  </Accordion>
+
+  <Accordion title="API Reference">
+    Detailed API documentation with complete examples:
+    - [Work Orders API](/api/work-orders) - Create, manage, and track work orders
+    - [Create Work Order](/api/endpoints/create-work-order) - POST endpoint for creating work orders
+    - [Get Work Order](/api/endpoints/get-work-order) - GET endpoint for retrieving work orders
+    - [List Work Orders](/api/endpoints/list-work-orders) - GET endpoint with filtering and pagination
+    - Authentication and authorization patterns
+    - Rate limiting and error handling
+    - Request/response examples in multiple languages
+  </Accordion>
+
+</Accordions>
+
+## Why Choose BuildInfra?
+
+BuildInfra is designed to **streamline construction project management**, eliminate workflow bottlenecks, and provide teams with a **robust, scalable platform** for managing complex construction operations.
+
+### Key Features
+
+- **Comprehensive Work Order Management** - Handle direct BOQ, indirect BOQ, non-BOQ, and labor work orders
+- **Real-time Progress Tracking** - Monitor project completion and resource allocation
+- **Flexible API Architecture** - RESTful APIs with comprehensive error handling and rate limiting
+- **Advanced BOQ Integration** - Seamless connection with Bill of Quantities systems
+- **Multi-location Support** - Manage work across multiple project sites
+- **Role-based Access Control** - Secure permissions for different user types
+
+### Built for Scale
+
+- **High Performance APIs** - Optimized for large-scale construction projects
+- **Comprehensive Validation** - Business rule enforcement at every level
+- **Audit Trail** - Complete tracking of all changes and approvals
+- **Integration Ready** - Connect with existing ERP, accounting, and project management systems
+
+## Getting Started
+
+<Steps>
+  <Step title="Explore the Work Order System">
+    Start with our [Work Order Overview](/work-order/overview) to understand the core concepts and system architecture.
+  </Step>
+  
+  <Step title="Review the API Documentation">
+    Check out our [API Reference](/api/work-orders) with complete examples in cURL, JavaScript, and Python.
+  </Step>
+  
+  <Step title="Understand the Data Flow">
+    Learn how data moves through the system with our [Data Flow Guide](/work-order/data-flow).
+  </Step>
+  
+  <Step title="Explore API Endpoints">
+    Browse our [API Endpoints](/api/work-orders) to see all available operations and start building your integration.
+  </Step>
+</Steps>
+
+## API Quick Start
+
+Here's a quick example of creating a work order:
+
+```bash cURL
+curl -X POST "https://api.ttipl.com/v1/work-orders" \
+  -H "Authorization: Bearer your_api_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "projectId": "proj_abc123",
+    "type": "DIRECT_BOQ",
+    "contractorId": "cont_def456",
+    "items": [{
+      "boqId": "boq_xyz789",
+      "quantity": 100,
+      "rate": 2500.00
+    }],
+    "startDate": "2024-01-15",
+    "endDate": "2024-03-30"
+  }'
+```
+
+## Support and Community
+
+- **Documentation Issues**: Found a problem or have suggestions? Please let us know
+- **API Support**: Get help with integration and implementation
+- **Feature Requests**: Share your ideas for improving BuildInfra
 
 ---
 
-## 📖 What You’ll Find Here
-- **Getting Started** → Step-by-step guides to quickly set up and run BuildInfra.  
-- **Core Concepts** → Learn the architecture, workflows, and key principles.  
-- **Modules & APIs** → Explore detailed documentation of each module and API endpoint.  
-- **Best Practices** → Recommendations, patterns, and tips for scalable development.  
-- **Troubleshooting** → Common issues, debugging tips, and FAQs.
-
----
-
-## 🌟 Why BuildInfra?
-BuildInfra is designed to **simplify complex infrastructure workflows**, streamline project management, and provide developers with a **robust and scalable foundation**.  
-
-Some highlights:
-- Modular and extensible design  
-- API-first approach  
-- Developer-friendly tooling  
-- Secure and scalable deployment practices  
-
----
-
-## 📌 Next Steps
-👉 Start with our [Getting Started Guide](getting-started) to set up BuildInfra in minutes.  
-
-If you’re already familiar, dive into the [Core Concepts](core-concepts) to understand how everything fits together.  
-
----
-
-## 💡 Contributing
-We welcome contributions from the community! Check out the [Contributing Guide](contributing) to learn how you can get involved.
-
----
+**Ready to get started?** Dive into our [Work Order System Overview](/work-order/overview) or explore our [comprehensive API documentation](/api/work-orders).
 
 Made with ❤️ by the BuildInfra Team
