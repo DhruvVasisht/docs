@@ -36,43 +36,12 @@ https://api.ttipl.com/v1
 
 The Work Orders API provides the following endpoints for complete work order lifecycle management:
 
-<CardGroup cols={2}>
-  <Card title="Create Work Order" icon="plus" href="/api/endpoints/create-work-order">
-    **POST** `/work-orders`
-    
-    Create new work orders with support for different types including BOQ-linked and non-BOQ work orders.
-  </Card>
-  
-  <Card title="Get Work Order" icon="eye" href="/api/endpoints/get-work-order">
-    **GET** `/work-orders/{id}`
-    
-    Retrieve detailed information about a specific work order including items and status.
-  </Card>
-  
-  <Card title="List Work Orders" icon="list" href="/api/endpoints/list-work-orders">
-    **GET** `/work-orders`
-    
-    Get paginated list of work orders with filtering and sorting capabilities.
-  </Card>
-  
-  <Card title="Update Work Order" icon="pen-to-square" href="/api/endpoints/update-work-order">
-    **PUT** `/work-orders/{id}`
-    
-    Update existing work orders in DRAFT status with new items, dates, or priorities.
-  </Card>
-  
-  <Card title="Delete Work Order" icon="trash" href="/api/endpoints/delete-work-order">
-    **DELETE** `/work-orders/{id}`
-    
-    Remove work orders that are in DRAFT status and no longer needed.
-  </Card>
-  
-  <Card title="Approve Work Order" icon="check" href="/api/endpoints/approve-work-order">
-    **POST** `/work-orders/{id}/approve`
-    
-    Approve work orders for execution, changing status from PENDING_APPROVAL to APPROVED.
-  </Card>
-</CardGroup>
+- **[Create Work Order](/api/endpoints/create-work-order)** - `POST /work-orders` - Create new work orders with support for different types
+- **[Get Work Order](/api/endpoints/get-work-order)** - `GET /work-orders/{id}` - Retrieve detailed information about a specific work order  
+- **[List Work Orders](/api/endpoints/list-work-orders)** - `GET /work-orders` - Get paginated list of work orders with filtering
+- **[Update Work Order](/api/endpoints/update-work-order)** - `PUT /work-orders/{id}` - Update existing work orders in DRAFT status
+- **[Delete Work Order](/api/endpoints/delete-work-order)** - `DELETE /work-orders/{id}` - Remove work orders that are in DRAFT status
+- **[Approve Work Order](/api/endpoints/approve-work-order)** - `POST /work-orders/{id}/approve` - Approve work orders for execution
 
 ## Work Order Types
 
